@@ -67,7 +67,7 @@ export default function RegisterPage() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
-
+  const [backendReady, setBackendReady] = useState(false);
   const [slideIndex, setSlideIndex] = useState(0);
 
   useEffect(() => {
@@ -80,7 +80,18 @@ export default function RegisterPage() {
   }, []);
 
   useEffect(() => {
-    fetch("/api/v1/health", { method: "GET" }).catch(() => {});
+    let cancelled = false;
+    const poll = async () => {
+      while (!cancelled) {
+        try {
+          const res = await fetch("/api/health");
+          if (res.ok) { setBackendReady(true); return; }
+        } catch {}
+        await new Promise(r => setTimeout(r, 4000));
+      }
+    };
+    poll();
+    return () => { cancelled = true; };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -614,9 +625,16 @@ export default function RegisterPage() {
             </div>
 
             
+            {!backendReady && (
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 14px", background: "rgba(232, 184, 75, 0.06)", borderRadius: "10px", border: "1px solid rgba(232, 184, 75, 0.2)" }}>
+                <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#e8b84b", animation: "pulse 1.4s ease-in-out infinite" }} />
+                <span style={{ fontSize: "12px", fontWeight: 500, color: "#64748b" }}>Connecting to server, please wait...</span>
+              </div>
+            )}
+
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || !backendReady}
               id="register-submit"
               style={{
                 width: "100%",
@@ -632,7 +650,8 @@ export default function RegisterPage() {
                 background: "linear-gradient(135deg, #e8b84b 0%, #c49a2e 100%)",
                 color: "#ffffff",
                 border: "none",
-                cursor: submitting ? "not-allowed" : "pointer",
+                cursor: (submitting || !backendReady) ? "not-allowed" : "pointer",
+                opacity: !backendReady ? 0.6 : 1,
                 boxShadow: "0 4px 15px rgba(232, 184, 75, 0.25), 0 1px 2px rgba(0, 0, 0, 0.05)",
                 transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
                 fontFamily: "Inter, sans-serif",
