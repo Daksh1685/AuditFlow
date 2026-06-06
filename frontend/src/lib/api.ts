@@ -1,6 +1,8 @@
 import axios, { AxiosInstance, AxiosError } from "axios";
 
-const BASE = "/api/v1";
+const BASE = process.env.NEXT_PUBLIC_BACKEND_URL
+  ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1`
+  : "/api/v1";
 
 export const api: AxiosInstance = axios.create({
   baseURL: BASE,
