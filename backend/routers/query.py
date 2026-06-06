@@ -59,7 +59,7 @@ async def _handle_query(
     history: list[dict] = []
     now = datetime.now(timezone.utc).isoformat()
 
-    # ── Conversation handling ─────────────────────────────────────────────────
+
     if payload.conversation_id:
         conv_result = db.table("conversations").select("*").eq(
             "id", payload.conversation_id
@@ -82,7 +82,7 @@ async def _handle_query(
         }).execute()
         conv = conv_res.data[0] if conv_res.data else {"id": conv_id}
 
-    # ── Gold Standard Verified QA check ──────────────────────────────────────
+
     query_emb = embed_query(payload.query)
     verified_qa_id = query_verified_qa(query_emb, threshold=0.85)
 
@@ -119,10 +119,10 @@ async def _handle_query(
                 total_time_ms=round(total_ms, 2), chunks_retrieved=1,
             )
 
-    # ── Hybrid retrieval ──────────────────────────────────────────────────────
+
     is_admin = current_user["role"] == "admin"
 
-    # For non-admin users, restrict search to only their own uploaded documents
+
     effective_doc_ids = payload.doc_filter
     user_has_docs = True
     if not is_admin and not effective_doc_ids:
@@ -144,8 +144,7 @@ async def _handle_query(
         db=db,
     )
 
-    # ── Generation ────────────────────────────────────────────────────────────
-    # Provide a context-aware message when no chunks found
+
     if not chunks and not user_has_docs:
         answer = (
             "You haven't uploaded any compliance documents yet. "
@@ -166,14 +165,12 @@ async def _handle_query(
         )
 
 
-    # ── Sanitize all text: null bytes (\u0000) crash PostgreSQL text columns ──────
-    # Source: can come from PDF chunk text in Qdrant/Supabase, or from LLM output
     def _san(text: str) -> str:
         if not isinstance(text, str):
             return text
         return text.replace('\x00', '').replace('\u0000', '')
 
-    # Sanitize chunk texts (from stored PDFs — the most common source of null bytes)
+
     for chunk in chunks:
         if "text" in chunk:
             chunk["text"] = _san(chunk["text"])
@@ -184,7 +181,7 @@ async def _handle_query(
 
     sources = _format_sources(chunks) if payload.include_sources else []
 
-    # Sanitize source texts before JSON serialization
+
     sources_raw = []
     for s in sources:
         sd = s.model_dump()

@@ -35,11 +35,11 @@ async def init_db() -> None:
     """Verify DB connectivity and ensure tables exist."""
     try:
         sb = get_db_client()
-        # Simple connectivity check
+
         sb.table("users").select("id").limit(1).execute()
         logger.info("✅ Database connected via Supabase REST")
     except Exception as e:
-        # Tables probably don't exist yet — user needs to run migration SQL
+
         logger.warning(
             f"Database check: {e}\n"
             "→ Run database/migrations/001_initial.sql in Supabase SQL Editor to create tables."

@@ -1,10 +1,4 @@
--- ============================================================
--- AuditFlow v2 — Database Schema
--- Run this ONCE in Supabase SQL Editor:
--- https://supabase.com/dashboard → SQL Editor → New Query
--- ============================================================
 
--- Users
 CREATE TABLE IF NOT EXISTS users (
     id            TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     username      TEXT UNIQUE NOT NULL,
@@ -18,7 +12,6 @@ CREATE TABLE IF NOT EXISTS users (
     last_login    TIMESTAMPTZ
 );
 
--- Documents
 CREATE TABLE IF NOT EXISTS documents (
     id                  TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     doc_id              TEXT UNIQUE NOT NULL,
@@ -40,7 +33,6 @@ CREATE TABLE IF NOT EXISTS documents (
     upload_timestamp    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Document chunks (for keyword search)
 CREATE TABLE IF NOT EXISTS document_chunks (
     id           TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     doc_id       TEXT NOT NULL REFERENCES documents(doc_id) ON DELETE CASCADE,
@@ -52,7 +44,6 @@ CREATE TABLE IF NOT EXISTS document_chunks (
 CREATE INDEX IF NOT EXISTS idx_chunks_doc_id ON document_chunks(doc_id);
 CREATE INDEX IF NOT EXISTS idx_chunks_content ON document_chunks USING gin(to_tsvector('english', content));
 
--- Conversations
 CREATE TABLE IF NOT EXISTS conversations (
     id         TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -62,7 +53,6 @@ CREATE TABLE IF NOT EXISTS conversations (
 );
 CREATE INDEX IF NOT EXISTS idx_conv_user ON conversations(user_id);
 
--- Messages
 CREATE TABLE IF NOT EXISTS messages (
     id               TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     conversation_id  TEXT NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
@@ -73,7 +63,6 @@ CREATE TABLE IF NOT EXISTS messages (
 );
 CREATE INDEX IF NOT EXISTS idx_msg_conv ON messages(conversation_id);
 
--- Audit logs
 CREATE TABLE IF NOT EXISTS audit_logs (
     id                     TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     user_id                TEXT REFERENCES users(id),
@@ -94,7 +83,6 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 CREATE INDEX IF NOT EXISTS idx_audit_timestamp ON audit_logs(timestamp DESC);
 CREATE INDEX IF NOT EXISTS idx_audit_user ON audit_logs(user_id);
 
--- Verified QA pairs
 CREATE TABLE IF NOT EXISTS verified_qas (
     id          TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     question    TEXT NOT NULL,
@@ -105,7 +93,6 @@ CREATE TABLE IF NOT EXISTS verified_qas (
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Regulatory feeds
 CREATE TABLE IF NOT EXISTS regulatory_feeds (
     id            TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     title         TEXT NOT NULL,
@@ -120,7 +107,6 @@ CREATE TABLE IF NOT EXISTS regulatory_feeds (
 );
 CREATE INDEX IF NOT EXISTS idx_feeds_source ON regulatory_feeds(source);
 
--- Feed user actions
 CREATE TABLE IF NOT EXISTS feed_user_actions (
     id         TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     feed_id    TEXT NOT NULL REFERENCES regulatory_feeds(id) ON DELETE CASCADE,

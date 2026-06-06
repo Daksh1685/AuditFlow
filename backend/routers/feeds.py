@@ -32,7 +32,7 @@ def _to_feed(row: dict, bookmarked=False, reviewed=False, review_notes=None) -> 
         summary=row.get("summary"),
         content=row.get("content"),
         source=row["source"],
-        source_short=row.get("source_short") or row["source"],   # authority short name
+        source_short=row.get("source_short") or row["source"],
         category=row.get("category"),
         url=row.get("url"),
         published_at=row.get("published_at"),
@@ -41,7 +41,7 @@ def _to_feed(row: dict, bookmarked=False, reviewed=False, review_notes=None) -> 
         department_tags=row.get("department_tags"),
         ai_impact=row.get("ai_impact"),
         created_at=row["created_at"],
-        is_read=False,                  # tracked client-side only
+        is_read=False,
         is_bookmarked=bookmarked,
         is_reviewed=reviewed,
         review_notes=review_notes,
@@ -73,10 +73,10 @@ async def list_feeds(
     feeds = result.data or []
     feed_ids = [f["id"] for f in feeds]
 
-    # Get user actions for this user
+
     bookmarked = set()
     reviewed = set()
-    notes_map: dict = {}  # feed_id -> notes
+    notes_map: dict = {}
     if feed_ids:
         actions = db.table("feed_user_actions").select("feed_id,action,notes").eq(
             "user_id", current_user["id"]
@@ -104,7 +104,7 @@ async def get_feed(
     if not result.data:
         raise HTTPException(status_code=404, detail="Feed not found")
     row = result.data[0]
-    # Get user actions for this feed
+
     actions = db.table("feed_user_actions").select("action,notes").eq(
         "user_id", current_user["id"]
     ).eq("feed_id", feed_id).execute().data or []
@@ -123,20 +123,20 @@ async def create_feed(
     now = datetime.now(timezone.utc).isoformat()
     data = payload.model_dump()
 
-    # Derive is_critical from severity if provided
+
     if data.get("severity") in ("high", "critical"):
         data["is_critical"] = True
     elif data.get("severity") in ("low", "medium"):
         data["is_critical"] = False
 
-    # Only columns that exist in the DB table
+
     DB_COLUMNS = {"title", "summary", "content", "source", "source_short",
                   "category", "url", "published_at", "is_critical",
                   "severity", "department_tags"}
     row = {k: v for k, v in data.items() if k in DB_COLUMNS and v is not None}
     row["id"] = str(uuid.uuid4())
     row["created_at"] = now
-    # Ensure source_short defaults to source
+
     row.setdefault("source_short", row["source"])
     if row.get("published_at") and hasattr(row["published_at"], "isoformat"):
         row["published_at"] = row["published_at"].isoformat()
@@ -217,12 +217,12 @@ async def get_impact_analysis(
         raise HTTPException(status_code=404, detail="Feed not found")
     feed = result.data[0]
 
-    # Return cached full-JSON analysis if available
+
     cached = feed.get("ai_impact")
     if cached:
         import json
         try:
-            # Try to parse as full JSON first (new format)
+
             data = json.loads(cached) if cached.startswith("{") else None
             if data and "impact_summary" in data:
                 return ImpactAnalysisResponse(
@@ -233,15 +233,14 @@ async def get_impact_analysis(
                 )
         except Exception:
             pass
-        # Legacy: cached was just the summary string — regenerate to get full data
 
-    # Generate fresh analysis via Gemini
+
     analysis = generate_impact_analysis(
         feed_title=feed["title"],
         feed_content=feed.get("content") or feed.get("summary") or "",
     )
 
-    # Cache the FULL JSON in DB so repeat loads are instant with all fields
+
     import json
     try:
         db.table("regulatory_feeds").update({

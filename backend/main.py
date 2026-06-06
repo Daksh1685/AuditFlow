@@ -21,7 +21,7 @@ API_V1 = "/api/v1"
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("🚀 AuditFlow v%s starting...", settings.APP_VERSION)
-    # Verify Supabase DB connectivity + ensure Qdrant collections exist
+
     await init_db()
     ensure_collections()
     logger.info("✅ All systems ready")

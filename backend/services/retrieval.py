@@ -45,7 +45,7 @@ async def retrieve(
     top_k = top_k or settings.TOP_K_RESULTS
     start = time.perf_counter()
 
-    # 1. Semantic search via Qdrant
+
     query_emb = embed_query(query)
     semantic = query_chunks(
         query_embedding=query_emb,
@@ -55,7 +55,7 @@ async def retrieve(
         is_admin=is_admin,
     )
 
-    # 2. Keyword search via Supabase REST (ilike on document_chunks)
+
     keyword: List[Dict] = []
     if db is not None:
         try:
@@ -66,12 +66,12 @@ async def retrieve(
                     "doc_id, chunk_index, content, page_num"
                 ).ilike("content", f"%{main_word}%").limit(30)
 
-                # Filter keyword results by allowed doc_ids (user ownership isolation)
+
                 if doc_ids:
-                    # Supabase REST supports `.in_()` for list filtering
+
                     q = q.in_("doc_id", doc_ids)
                 elif not is_admin and department:
-                    # Fallback: department filter (admin path or explicit department)
+
                     allowed_docs = db.table("documents").select("doc_id").or_(
                         f"department.eq.{department},is_global.eq.true,department.eq.global"
                     ).execute().data or []
@@ -79,12 +79,12 @@ async def retrieve(
                     if allowed_ids:
                         q = q.in_("doc_id", allowed_ids)
                     else:
-                        q = q.eq("doc_id", "__no_docs__")  # return nothing
+                        q = q.eq("doc_id", "__no_docs__")
 
                 result = q.execute()
                 rows = result.data or []
 
-                # Get filenames for matched docs
+
                 doc_id_set = {r["doc_id"] for r in rows}
                 if doc_id_set:
                     docs_meta = db.table("documents").select("doc_id,filename,department,is_global").in_(
@@ -112,7 +112,6 @@ async def retrieve(
             logger.warning(f"[Retrieval] Keyword search failed: {e}")
 
 
-    # 3. RRF merge
     merged = _rrf_merge(semantic, keyword)
     final = merged[:top_k]
 

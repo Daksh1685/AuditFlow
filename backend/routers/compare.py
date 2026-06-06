@@ -62,7 +62,7 @@ async def perform_gap_analysis(
     file_bytes = await file.read()
     temp_id = str(uuid.uuid4())
 
-    # Parse the uploaded amendment document
+
     pages = parse_document(file_bytes, file.filename)
     if not pages:
         raise HTTPException(
@@ -78,7 +78,7 @@ async def perform_gap_analysis(
     if not new_chunks:
         raise HTTPException(status_code=400, detail="Document parsed but no text chunks could be extracted.")
 
-    # Analyze top 5 chunks for speed & cost
+
     analysis_chunks = new_chunks[:5]
     client = Groq(api_key=settings.GROQ_API_KEY)
     gap_items: list[GapItem] = []
@@ -87,9 +87,7 @@ async def perform_gap_analysis(
 
     is_admin = current_user["role"] == "admin"
 
-    # ── Determine internal policy document scope (user's own uploads) ──────────
-    # Non-admin: compare against only the current user's indexed documents
-    # Admin: compare across the whole department
+
     effective_doc_ids = None
     if not is_admin:
         user_docs_res = db.table("documents").select("doc_id").eq(
@@ -111,7 +109,7 @@ async def perform_gap_analysis(
         new_text = chunk["text"]
         page_num = chunk["metadata"]["page"]
 
-        # Retrieve matching internal documents (scoped to user's own docs)
+
         internal_matches, _ = await retrieve(
             query=new_text,
             top_k=3,
@@ -130,7 +128,7 @@ async def perform_gap_analysis(
             )
         internal_context = "\n\n".join(context_parts) if context_parts else "[No relevant internal policies found]"
 
-        # Build a tight, focused prompt — avoid echoing input context in output
+
         prompt = (
             "You are a compliance gap auditor. Analyze the clause below against internal policies.\n\n"
             f"CLAUSE (from {file.filename}, p.{page_num}):\n{new_text[:600]}\n\n"
@@ -145,8 +143,7 @@ async def perform_gap_analysis(
         try:
             resp_text = _groq_compare(client, prompt)
 
-            # ── JSON parser with fallback ──────────────────────────────────────
-            # Strip markdown code fences if Groq wraps in ```json ... ```
+
             clean = resp_text.strip()
             if clean.startswith("```"):
                 clean = "\n".join(
@@ -154,7 +151,7 @@ async def perform_gap_analysis(
                     if not l.strip().startswith("```")
                 ).strip()
 
-            # Extract JSON object
+
             start_idx = clean.find("{")
             end_idx = clean.rfind("}")
             parsed: dict = {}
@@ -171,7 +168,7 @@ async def perform_gap_analysis(
             explanation_val = parsed.get("explanation") or "Analysis could not be completed for this clause."
             recommendation_val = parsed.get("recommendation") or "Manual review recommended."
 
-            # Sanitize — truncate overly long values (safety net)
+
             explanation_val = str(explanation_val)[:400]
             recommendation_val = str(recommendation_val)[:400]
 

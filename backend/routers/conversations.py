@@ -106,8 +106,6 @@ async def get_messages(
     return [_to_msg(m) for m in msgs.data]
 
 
-
-
 @router.delete("", response_model=SuccessResponse)
 async def clear_all_conversations(
     current_user: dict = Depends(get_current_user),

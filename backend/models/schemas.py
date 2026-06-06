@@ -3,8 +3,6 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, EmailStr, Field
 
 
-# ─── Auth ────────────────────────────────────────────────────────────────────
-
 class RegisterRequest(BaseModel):
     username: str = Field(..., min_length=3, max_length=64)
     email: EmailStr
@@ -54,8 +52,6 @@ class UpdateRoleRequest(BaseModel):
     department: Optional[str] = None
 
 
-# ─── Documents ───────────────────────────────────────────────────────────────
-
 class DocumentInfo(BaseModel):
     id: str
     doc_id: str
@@ -101,8 +97,6 @@ class UpdateMetadataRequest(BaseModel):
     is_global: Optional[bool] = None
 
 
-# ─── Query / RAG ─────────────────────────────────────────────────────────────
-
 class QueryRequest(BaseModel):
     query: str = Field(..., min_length=1)
     conversation_id: Optional[str] = None
@@ -132,8 +126,6 @@ class QueryResponse(BaseModel):
     total_time_ms: float
     chunks_retrieved: int
 
-
-# ─── Conversations ────────────────────────────────────────────────────────────
 
 class MessageSchema(BaseModel):
     id: str
@@ -165,13 +157,11 @@ class ConversationDetail(BaseModel):
     model_config = {"from_attributes": True}
 
 
-# ─── Gap Analyzer ────────────────────────────────────────────────────────────
-
 class GapItem(BaseModel):
     id: str
     new_rule: str
     internal_policy: str
-    status: str   # matching | conflict | gap
+    status: str
     explanation: str
     recommendation: str
 
@@ -184,20 +174,18 @@ class GapAnalysisResponse(BaseModel):
     missing_found: int
 
 
-# ─── Feeds ───────────────────────────────────────────────────────────────────
-
 class FeedItem(BaseModel):
     id: str
     title: str
     summary: Optional[str]
     content: Optional[str]
     source: str
-    source_short: str              # "high" if is_critical else "medium"
+    source_short: str
     category: Optional[str]
     url: Optional[str]
     published_at: Optional[datetime]
     is_critical: bool
-    severity: str                  # "high" if is_critical else "medium"
+    severity: str
     department_tags: Optional[str] = None
     ai_impact: Optional[str] = None
     created_at: datetime
@@ -231,10 +219,8 @@ class ImpactAnalysisResponse(BaseModel):
     impact_summary: str
     affected_departments: List[str]
     action_items: List[str]
-    urgency: str   # low | medium | high | critical
+    urgency: str
 
-
-# ─── Admin ───────────────────────────────────────────────────────────────────
 
 class AuditLogSchema(BaseModel):
     id: str

@@ -31,7 +31,7 @@ def _to_user_info(row: dict) -> UserInfo:
 
 @router.post("/register", response_model=UserInfo, status_code=201)
 async def register(payload: RegisterRequest, db: Client = Depends(get_db)):
-    # Check uniqueness
+
     existing = db.table("users").select("id").or_(
         f"username.eq.{payload.username},email.eq.{payload.email}"
     ).execute()
@@ -69,7 +69,7 @@ async def login(payload: LoginRequest, db: Client = Depends(get_db)):
     if not user["is_active"]:
         raise HTTPException(status_code=403, detail="Account is deactivated")
 
-    # Update last login
+
     now = datetime.now(timezone.utc).isoformat()
     db.table("users").update({"last_login": now}).eq("id", user["id"]).execute()
     user["last_login"] = now

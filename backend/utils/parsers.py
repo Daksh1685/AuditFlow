@@ -11,7 +11,7 @@ def parse_txt(file_bytes: bytes, filename: str) -> List[Dict]:
         text = file_bytes.decode("utf-8", errors="replace").strip()
         if not text:
             return []
-        # Split into ~page-sized chunks for page numbering
+
         lines = text.split("\n")
         pages, current, page_num = [], [], 1
         for line in lines:
@@ -38,7 +38,7 @@ def parse_docx(file_bytes: bytes, filename: str) -> List[Dict]:
         for para in doc.paragraphs:
             if para.text.strip():
                 full_text.append(para.text.strip())
-        # Also extract tables
+
         for table in doc.tables:
             for row in table.rows:
                 row_text = " | ".join(cell.text.strip() for cell in row.cells if cell.text.strip())
@@ -46,7 +46,7 @@ def parse_docx(file_bytes: bytes, filename: str) -> List[Dict]:
                     full_text.append(row_text)
         if not full_text:
             return []
-        # Group into pages of ~3000 chars
+
         pages, current, page_num = [], [], 1
         for line in full_text:
             current.append(line)
@@ -93,7 +93,7 @@ def _gemini_ocr_pages(file_bytes: bytes, max_pages: int = 8) -> List[Dict]:
 
         for i in range(total):
             if i > 0:
-                time.sleep(3.5)  # avoid rate limit
+                time.sleep(3.5)
             page = doc[i]
             pix = page.get_pixmap(dpi=150)
             img_bytes = pix.tobytes("png")

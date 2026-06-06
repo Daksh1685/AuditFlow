@@ -16,11 +16,9 @@ logger = logging.getLogger(__name__)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 bearer_scheme = HTTPBearer(auto_error=False)
 
-# ── In-memory user cache (5 min TTL) ─────────────────────────────────────────
-# Eliminates a Supabase REST round-trip on every authenticated request.
-# Key: user_id  Value: (user_dict, expiry_timestamp)
+
 _user_cache: dict[str, tuple[dict, float]] = {}
-_CACHE_TTL = 300  # seconds
+_CACHE_TTL = 300
 
 
 def _cache_get(user_id: str) -> Optional[dict]:
@@ -44,8 +42,6 @@ def cache_invalidate(user_id: str) -> None:
     _user_cache.pop(user_id, None)
 
 
-# ── Password helpers ──────────────────────────────────────────────────────────
-
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
@@ -53,8 +49,6 @@ def hash_password(password: str) -> str:
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
 
-
-# ── JWT helpers ───────────────────────────────────────────────────────────────
 
 def create_access_token(user_id: str, role: str) -> str:
     payload = {
@@ -84,8 +78,6 @@ def decode_token(token: str) -> dict:
         raise HTTPException(status_code=401, detail=f"Invalid token: {e}")
 
 
-# ── Auth dependency ───────────────────────────────────────────────────────────
-
 async def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
     db: Client = Depends(get_db),
@@ -104,14 +96,14 @@ async def get_current_user(
 
     user_id: str = payload.get("sub", "")
 
-    # Check cache first
+
     cached = _cache_get(user_id)
     if cached:
         if not cached.get("is_active"):
             raise HTTPException(status_code=401, detail="Account is deactivated")
         return cached
 
-    # Cache miss — fetch from Supabase
+
     result = db.table("users").select("*").eq("id", user_id).eq("is_active", True).execute()
     if not result.data:
         raise HTTPException(status_code=401, detail="User not found or inactive")

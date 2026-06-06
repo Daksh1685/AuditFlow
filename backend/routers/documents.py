@@ -47,12 +47,12 @@ async def list_documents(
     db: Client = Depends(get_db),
 ):
     if current_user["role"] == "admin":
-        # Admins see all documents
+
         q = db.table("documents").select("*")
         if department:
             q = q.eq("department", department)
     else:
-        # Regular users only see documents they uploaded themselves
+
         q = db.table("documents").select("*").eq("uploaded_by", current_user["id"])
     result = q.order("upload_timestamp", desc=True).execute()
     return [_to_doc_info(d) for d in result.data]
@@ -64,17 +64,17 @@ async def get_document_stats(
     db: Client = Depends(get_db),
 ):
     if current_user["role"] == "admin":
-        # Admins see stats across all documents
+
         result = db.table("documents").select("id", count="exact").execute()
         total_docs = result.count or len(result.data)
         vs = get_collection_stats()
     else:
-        # Regular users only see their own document stats
+
         result = db.table("documents").select("id", count="exact").eq(
             "uploaded_by", current_user["id"]
         ).execute()
         total_docs = result.count or len(result.data)
-        # Count only the user's own chunks
+
         doc_ids = [d["id"] for d in result.data]
         if doc_ids:
             chunks_result = db.table("document_chunks").select("id", count="exact").in_(
@@ -96,7 +96,6 @@ async def get_document_stats(
         total_chunks=vs.get("total_chunks", 0),
         collection_name=vs.get("collection_name", "compliance_docs"),
     )
-
 
 
 @router.get("/{doc_id}", response_model=DocumentInfo)
@@ -124,14 +123,14 @@ async def get_document(
 @router.get("/{doc_id}/file")
 async def download_document_file(
     doc_id: str,
-    token: Optional[str] = Query(None),          # allow ?token= for browser fetch
+    token: Optional[str] = Query(None),
     db: Client = Depends(get_db),
 ):
     """
     Stream the original file from Supabase Storage.
     Accepts Bearer token in Authorization header OR ?token= query param.
     """
-    # Authenticate via query token if no Authorization header
+
     if not token:
         raise HTTPException(status_code=401, detail="Token required")
     try:
@@ -142,7 +141,7 @@ async def download_document_file(
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
-    # Fetch document record
+
     result = db.table("documents").select("*").eq("doc_id", doc_id).execute()
     if not result.data:
         raise HTTPException(status_code=404, detail="Document not found")
@@ -152,7 +151,7 @@ async def download_document_file(
     if not storage_path:
         raise HTTPException(status_code=404, detail="File not stored — storage path missing")
 
-    # Download from Supabase Storage
+
     try:
         client = get_storage_client()
         file_bytes = client.storage.from_(settings.SUPABASE_BUCKET).download(storage_path)
@@ -206,7 +205,7 @@ async def preview_document(
         logger.error(f"Storage download failed: {e}")
         raise HTTPException(status_code=404, detail="File not found in storage")
 
-    # Extract text using existing parsers
+
     from utils.parsers import parse_document
     filename = doc.get("filename", "document")
     pages = parse_document(file_bytes, filename)
@@ -218,8 +217,6 @@ async def preview_document(
         "pages": pages,
         "total_pages": len(pages),
     }
-
-
 
 
 @router.delete("/{doc_id}", response_model=SuccessResponse)
@@ -236,22 +233,22 @@ async def delete_document(
     if current_user["role"] != "admin" and doc.get("uploaded_by") != current_user["id"]:
         raise HTTPException(status_code=403, detail="You can only delete your own documents")
 
-    # Delete from Qdrant
+
     try:
         delete_doc_chunks(doc_id)
     except Exception as e:
         logger.warning(f"Qdrant delete failed: {e}")
 
-    # Delete from Supabase Storage
+
     if doc.get("storage_path"):
         try:
             delete_file(doc["storage_path"])
         except Exception as e:
             logger.warning(f"Storage delete failed: {e}")
 
-    # Delete chunks from DB
+
     db.table("document_chunks").delete().eq("doc_id", doc_id).execute()
-    # Delete document record
+
     db.table("documents").delete().eq("doc_id", doc_id).execute()
 
     return SuccessResponse(message=f"Document '{doc['filename']}' deleted successfully")

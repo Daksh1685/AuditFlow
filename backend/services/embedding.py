@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 genai.configure(api_key=settings.GEMINI_API_KEY)
 
-EMBEDDING_DIM = 3072  # gemini-embedding-001 output dimension
-_BATCH_SIZE = 100    # Max texts per embedding batch
+EMBEDDING_DIM = 3072
+_BATCH_SIZE = 100
 
 
 def embed_texts(texts: List[str]) -> List[List[float]]:

@@ -23,7 +23,7 @@ async def upload_document(
     db: Client = Depends(get_db),
 ):
     is_global_bool = is_global.lower() in ("true", "1", "yes")
-    # Only admins can mark documents as global
+
     if is_global_bool and current_user["role"] != "admin":
         is_global_bool = False
 

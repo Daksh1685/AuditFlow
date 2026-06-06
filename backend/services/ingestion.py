@@ -37,7 +37,7 @@ async def ingest_document(
     if file_size > settings.UPLOAD_MAX_SIZE_MB * 1024 * 1024:
         raise ValueError(f"File size {file_size/(1024*1024):.1f}MB exceeds limit of {settings.UPLOAD_MAX_SIZE_MB}MB")
 
-    # Per-user SHA-256 deduplication (same file can exist across different users)
+
     file_hash = sha256_hash(file_bytes)
     existing = db.table("documents").select("doc_id").eq("file_hash", file_hash).eq(
         "uploaded_by", uploaded_by
@@ -49,7 +49,7 @@ async def ingest_document(
     doc_id = str(uuid.uuid4())
     effective_dept = "global" if is_global else department
 
-    # 2. Upload to Supabase Storage
+
     storage_path = f"{effective_dept}/{doc_id}/{filename}"
     content_type_map = {
         ".pdf": "application/pdf",
@@ -62,7 +62,7 @@ async def ingest_document(
     except Exception as e:
         raise ValueError(f"File storage failed: {e}")
 
-    # 3. Parse
+
     pages = parse_document(file_bytes, filename)
     if not pages:
         delete_file(storage_path)
@@ -71,20 +71,20 @@ async def ingest_document(
             "Scanned PDFs need OCR (Gemini fallback, takes longer)."
         )
 
-    # 4. Chunk
+
     chunks = create_chunks(pages, doc_id, filename, department, is_global)
     if not chunks:
         delete_file(storage_path)
         raise ValueError("Document parsed but produced no text chunks.")
 
-    # 5. Embed
+
     texts = [c["text"] for c in chunks]
     embeddings = embed_texts(texts)
 
-    # 6. Upsert to Qdrant
+
     upsert_chunks(doc_id=doc_id, chunks=chunks, embeddings=embeddings)
 
-    # 7. Save document record to Supabase DB
+
     now = datetime.now(timezone.utc).isoformat()
     doc_row = {
         "id": str(uuid.uuid4()),
@@ -108,7 +108,7 @@ async def ingest_document(
         db.table("documents").insert(doc_row).execute()
     except Exception as db_err:
         err_str = str(db_err)
-        # Clean up Qdrant + storage if DB insert fails
+
         try:
             delete_doc_chunks(doc_id)
         except Exception:
@@ -125,7 +125,6 @@ async def ingest_document(
         raise ValueError(f"Database error while saving document: {db_err}")
 
 
-    # 8. Save chunks for keyword search
     try:
         chunk_rows = [
             {
@@ -137,7 +136,7 @@ async def ingest_document(
             }
             for c in chunks
         ]
-        # Insert in batches of 100
+
         for i in range(0, len(chunk_rows), 100):
             db.table("document_chunks").insert(chunk_rows[i:i+100]).execute()
     except Exception as e:

@@ -20,7 +20,7 @@ def get_client() -> QdrantClient:
             url=settings.QDRANT_URL,
             api_key=settings.QDRANT_API_KEY,
             port=443,
-            prefer_grpc=False,  # Force HTTPS REST (gRPC port may be blocked)
+            prefer_grpc=False,
             timeout=30,
         )
         logger.info("Qdrant client connected")
@@ -45,7 +45,7 @@ def ensure_collections() -> None:
         else:
             logger.info(f"Qdrant collection exists: {col_name}")
 
-        # Ensure payload indexes for filtered searches (required by Qdrant Cloud)
+
         for field, schema in [
             ("doc_id", qmodels.PayloadSchemaType.KEYWORD),
             ("department", qmodels.PayloadSchemaType.KEYWORD),
@@ -58,8 +58,7 @@ def ensure_collections() -> None:
                 )
                 logger.info(f"Payload index ensured: {col_name}.{field}")
             except Exception:
-                pass  # Already exists — safe to ignore
-
+                pass
 
 
 def _build_filter(
@@ -69,7 +68,7 @@ def _build_filter(
 ) -> Optional[qmodels.Filter]:
     must: List[qmodels.Condition] = []
 
-    # Department access filter (skip for admins)
+
     if not is_admin and department:
         must.append(
             qmodels.FieldCondition(
@@ -78,7 +77,7 @@ def _build_filter(
             )
         )
 
-    # Optional doc_id filter
+
     if doc_ids:
         must.append(
             qmodels.FieldCondition(
@@ -103,7 +102,7 @@ def upsert_chunks(
     points = []
     for i, (chunk, vector) in enumerate(zip(chunks, embeddings)):
         meta = chunk.get("metadata", {})
-        # Use UUID5 (deterministic) so re-indexing same doc overwrites cleanly
+
         point_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{doc_id}_{i}"))
         points.append(
             qmodels.PointStruct(

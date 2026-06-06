@@ -41,7 +41,7 @@ def generate_answer(
             0.0,
         )
 
-    # Build context block
+
     context_parts = []
     for i, chunk in enumerate(chunks[:settings.TOP_K_RESULTS], 1):
         meta = chunk.get("metadata", {})
@@ -51,7 +51,7 @@ def generate_answer(
         )
     context = "\n\n".join(context_parts)
 
-    # Build Groq messages (uses OpenAI-compatible format: user/assistant)
+
     messages = [{"role": "system", "content": _GROUNDING_SYSTEM_PROMPT}]
 
     for turn in conversation_history[-settings.MAX_CONVERSATION_HISTORY:]:
@@ -74,7 +74,7 @@ def generate_answer(
             max_tokens=settings.GEMINI_MAX_OUTPUT_TOKENS,
         )
         answer = (response.choices[0].message.content or "").strip()
-        # Strip null bytes — PostgreSQL text columns reject \u0000
+
         answer = answer.replace('\x00', '').replace('\u0000', '')
     except Exception as e:
         logger.error(f"[Groq] Generation failed: {e}")
@@ -116,7 +116,7 @@ The urgency must be one of: low, medium, high, critical."""
         raw = response.choices[0].message.content.strip()
 
         import json, re
-        # Strip markdown code fences if present
+
         raw = re.sub(r"^```(?:json)?\s*", "", raw)
         raw = re.sub(r"\s*```$", "", raw)
         json_match = re.search(r'\{[\s\S]*\}', raw)
