@@ -43,20 +43,20 @@ Registration is open but each new account defaults to read-only access. An admin
 ```
 AuditFlow/
 ├── backend/
-│   ├── routers/          # API route handlers (auth, documents, feeds, query, compare, admin)
-│   ├── services/         # Business logic (embedding, retrieval, generation, ingestion, storage)
-│   ├── models/           # SQLAlchemy ORM models and Pydantic schemas
-│   ├── database/         # Supabase client and migration scripts
-│   ├── utils/            # Chunking, hashing, and parsing utilities
-│   ├── config.py         # Environment configuration
-│   ├── main.py           # FastAPI application entry point
-│   └── run.py            # Uvicorn launcher
+│   ├── routers/          
+│   ├── services/         
+│   ├── models/         
+│   ├── database/         
+│   ├── utils/          
+│   ├── config.py        
+│   ├── main.py           
+│   └── run.py           
 └── frontend/
-    ├── src/app/          # Next.js pages (App Router)
-    ├── src/components/   # Shared UI components
-    ├── src/contexts/     # Auth context
-    ├── src/hooks/        # Custom React hooks
-    └── src/lib/          # Axios API client
+    ├── src/app/          
+    ├── src/components/   
+    ├── src/contexts/    
+    ├── src/hooks/       
+    └── src/lib/          
 ```
 
 ---
