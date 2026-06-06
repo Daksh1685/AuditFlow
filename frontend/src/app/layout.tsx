@@ -8,9 +8,6 @@ export const metadata: Metadata = {
   description:
     "Chat with SEBI, RBI, FIU-IND, and Ind AS regulatory documents using AI. Automated gap analysis, live regulatory feeds, and immutable audit trails — built for Indian financial compliance teams.",
   keywords: ["compliance", "SEBI", "RBI", "FIU-IND", "Ind AS", "audit", "AML", "AI", "India", "regulatory"],
-  icons: {
-    icon: "/favicon.svg",
-  },
 };
 
 export default function RootLayout({
