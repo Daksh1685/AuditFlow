@@ -10,7 +10,7 @@ The system is designed around the assumption that compliance teams spend most of
 
 **Policy Gap Analyzer**
 
-Upload a regulatory amendment (PDF, DOCX, or plain text) and select a target department. The system parses the document, runs each clause through a semantic similarity search against your indexed internal SOPs, and returns a section-by-section comparison — flagging what is covered, what is partially addressed, and what is missing entirely. Results are exportable as structured PDF reports and logged to the audit ledger automatically.
+Upload a regulatory amendment (PDF, DOCX, or plain text) and select a target department. The system parses the document, runs each clause through a semantic similarity search against your indexed internal SOPs, and returns a section-by-section comparison flagging what is covered, what is partially addressed, and what is missing entirely. Results are exportable as structured PDF reports and logged to the audit ledger automatically.
 
 **Regulatory Feeds**
 
@@ -26,7 +26,7 @@ Upload, tag, and manage internal compliance documents. All uploads are stored in
 
 **Audit Trail**
 
-An append-only ledger of every action taken in the system — document uploads, gap analyses, AI queries, feed reviews, and user management events. Designed for external auditor access and internal accountability.
+An append-only ledger of every action taken in the system document uploads, gap analyses, AI queries, feed reviews, and user management events. Designed for external auditor access and internal accountability.
 
 **Admin Panel**
 
