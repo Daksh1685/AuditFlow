@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND = process.env.BACKEND_URL || "http://127.0.0.1:8000";
 
-export const runtime = "nodejs";
+export const runtime = "edge";
+
 
 async function handler(
   request: NextRequest,
