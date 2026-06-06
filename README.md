@@ -1,8 +1,8 @@
 # AuditFlow
 
-AuditFlow is a compliance intelligence platform built for financial institutions operating under Indian regulatory frameworks. It automates the most time-consuming parts of compliance work — gap analysis, regulatory monitoring, document management, and audit trail generation — through a combination of large language models, semantic search, and structured data pipelines.
+AuditFlow is a compliance intelligence platform built for financial institutions operating under Indian regulatory frameworks. It automates the most time consuming parts of compliance work gap analysis, regulatory monitoring, document management, and audit trail generation through a combination of large language models, semantic search, and structured data pipelines.
 
-The system is designed around the assumption that compliance teams spend most of their time doing things machines can do faster: reading circulars, cross-referencing policy clauses, flagging gaps, and maintaining records. AuditFlow handles all of that, leaving analysts free for higher-order judgment.
+The system is designed around the assumption that compliance teams spend most of their time doing things machines can do faster: reading circulars, cross referencing policy clauses, flagging gaps, and maintaining records. AuditFlow handles all of that, leaving analysts free for higher-order judgment.
 
 ---
 
