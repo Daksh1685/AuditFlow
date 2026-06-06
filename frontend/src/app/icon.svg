@@ -1,0 +1,10 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Rounded squircle background in brand charcoal (#2d3142) -->
+  <rect x="6" y="6" width="116" height="116" rx="28" fill="#2d3142" stroke="#e8b84b" stroke-opacity="0.1" stroke-width="2"/>
+  
+  <!-- White capital 'A' -->
+  <path d="M38 90 L64 38 L90 90" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  
+  <!-- Custom gold trend line (#e8b84b) starting inside the A, dipping, rising up-right out of the squircle -->
+  <path d="M50 74 L68 56 L82 66 L112 36" stroke="#e8b84b" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
