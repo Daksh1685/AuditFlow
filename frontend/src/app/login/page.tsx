@@ -69,6 +69,10 @@ export default function LoginPage() {
     setSlideIndex(randomIndex);
   }, []);
 
+  useEffect(() => {
+    fetch("/api/v1/health", { method: "GET" }).catch(() => {});
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.username || !form.password) {

@@ -32,10 +32,9 @@ def _to_user_info(row: dict) -> UserInfo:
 @router.post("/register", response_model=UserInfo, status_code=201)
 async def register(payload: RegisterRequest, db: Client = Depends(get_db)):
 
-    existing = db.table("users").select("id").or_(
-        f"username.eq.{payload.username},email.eq.{payload.email}"
-    ).execute()
-    if existing.data:
+    by_username = db.table("users").select("id").eq("username", payload.username).execute()
+    by_email = db.table("users").select("id").eq("email", payload.email).execute()
+    if by_username.data or by_email.data:
         raise HTTPException(status_code=409, detail="Username or email already taken")
 
     user_id = str(uuid.uuid4())

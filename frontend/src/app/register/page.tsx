@@ -79,6 +79,10 @@ export default function RegisterPage() {
     setSlideIndex(randomIndex);
   }, []);
 
+  useEffect(() => {
+    fetch("/api/v1/health", { method: "GET" }).catch(() => {});
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.username || !form.email || !form.password) {
