@@ -1,0 +1,50 @@
+# ── Secrets & credentials (NEVER commit these) ────────────────────────
+*.env
+.env
+.env.*
+!.env.example
+CREDENTIALS_SAVED.env
+
+# ── Python / Backend ──────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+.Python
+*.sqlite3
+*.db
+
+# ── Node / Frontend ───────────────────────────────────────────────────
+node_modules/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ── OS & editors ──────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ── Misc ──────────────────────────────────────────────────────────────
+*.log
+*.bak
+*.tmp
+coverage/
+.cache/
