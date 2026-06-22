@@ -107,7 +107,5 @@ cd frontend
 npm install
 npm run dev
 ```
-
 The development server starts at `http://localhost:3000`. API requests are proxied to the backend automatically via Next.js rewrites.
-
 ---
