@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, EmailStr, Field
 
-
 class RegisterRequest(BaseModel):
     username: str = Field(..., min_length=3, max_length=64)
     email: EmailStr
