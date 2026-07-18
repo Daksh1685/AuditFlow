@@ -42,9 +42,9 @@ cd AuditFlow
 ```bash
 cd backend
 python -m venv venv
-venv\Scripts\activate        # Windows
+venv\Scripts\activate       
 pip install -r requirements.txt
-cp .env.example .env         # Fill in your credentials
+cp .env.example .env         
 python run.py
 ```
 
