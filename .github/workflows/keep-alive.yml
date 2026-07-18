@@ -1,0 +1,43 @@
+name: Keep Services Alive
+
+on:
+  schedule:
+    # Runs every day at 6:00 AM IST (00:30 UTC)
+    - cron: "30 0 * * *"
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render backend (wakes up instance)
+        run: |
+          echo "Pinging Render backend..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 https://auditflow-4ox4.onrender.com/health)
+          echo "Render /health → HTTP $STATUS"
+          if [ "$STATUS" = "200" ]; then
+            echo "Render is alive."
+          else
+            echo "Render returned $STATUS — it may still be starting up."
+          fi
+
+      - name: Ping Supabase (prevents project pause)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          echo "Pinging Supabase..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 30 \
+            -H "apikey: $SUPABASE_SERVICE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
+            "$SUPABASE_URL/rest/v1/users?select=id&limit=1")
+          echo "Supabase /rest/v1/users → HTTP $STATUS"
+          if [ "$STATUS" = "200" ] || [ "$STATUS" = "206" ]; then
+            echo "Supabase is alive."
+          else
+            echo "Supabase returned $STATUS."
+          fi
+
+      - name: Summary
+        run: echo "Daily keep-alive ping complete."
