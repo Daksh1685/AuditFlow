@@ -58,27 +58,32 @@ async def register(payload: RegisterRequest, db: Client = Depends(get_db)):
 
 @router.post("/login", response_model=TokenResponse)
 async def login(payload: LoginRequest, db: Client = Depends(get_db)):
-    result = db.table("users").select("*").eq("username", payload.username).execute()
-    if not result.data:
-        raise HTTPException(status_code=401, detail="Invalid username or password")
+    try:
+        result = db.table("users").select("*").eq("username", payload.username).execute()
+        if not result.data:
+            raise HTTPException(status_code=401, detail="Invalid username or password")
 
-    user = result.data[0]
-    if not verify_password(payload.password, user["hashed_password"]):
-        raise HTTPException(status_code=401, detail="Invalid username or password")
-    if not user["is_active"]:
-        raise HTTPException(status_code=403, detail="Account is deactivated")
+        user = result.data[0]
+        if not verify_password(payload.password, user["hashed_password"]):
+            raise HTTPException(status_code=401, detail="Invalid username or password")
+        if not user["is_active"]:
+            raise HTTPException(status_code=403, detail="Account is deactivated")
 
+        now = datetime.now(timezone.utc).isoformat()
+        db.table("users").update({"last_login": now}).eq("id", user["id"]).execute()
+        user["last_login"] = now
 
-    now = datetime.now(timezone.utc).isoformat()
-    db.table("users").update({"last_login": now}).eq("id", user["id"]).execute()
-    user["last_login"] = now
-
-    return TokenResponse(
-        access_token=create_access_token(user["id"], user["role"]),
-        refresh_token=create_refresh_token(user["id"]),
-        expires_in=480 * 60,
-        user=_to_user_info(user),
-    )
+        return TokenResponse(
+            access_token=create_access_token(user["id"], user["role"]),
+            refresh_token=create_refresh_token(user["id"]),
+            expires_in=480 * 60,
+            user=_to_user_info(user),
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Login unexpected error for user '{payload.username}': {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
 
 
 @router.post("/refresh", response_model=TokenResponse)

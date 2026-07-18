@@ -24,12 +24,12 @@ class UserInfo(BaseModel):
     id: str
     username: str
     email: str
-    full_name: Optional[str]
+    full_name: Optional[str] = None
     role: str
-    department: str
-    is_active: bool
-    created_at: datetime
-    last_login: Optional[datetime]
+    department: Optional[str] = None
+    is_active: bool = True
+    created_at: Optional[str] = None
+    last_login: Optional[str] = None
 
     model_config = {"from_attributes": True}
 
